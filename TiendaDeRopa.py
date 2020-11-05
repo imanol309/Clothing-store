@@ -20,7 +20,7 @@ class Productos:
 
 
         #Nombre de producto
-        Label(frame, text = ' name: ').grid(row = 1, column = 0)
+        Label(frame, text = 'name: ').grid(row = 1, column = 0)
         self.Nombre = Entry(frame)
         self.Nombre.focus()
         self.Nombre.grid(row = 1, column = 1)
@@ -30,18 +30,28 @@ class Productos:
         Label(frame, text = 'price: ').grid(row = 2, column = 0)
         self.Precio = Entry(frame)
         self.Precio.grid(row = 2, column = 1)
-
-
+        
+        
+        # #Cantidad
+        # Label(frame, text = 'cantidad: ').grid(row = 3, column = 0)
+        # self.canti = Entry(frame)
+        # self.canti.grid(row = 3, column = 1) 
+        
+        
         #Boton para agregar productos
         ttk.Button(frame, text = 'Agregar Productos', command = self.Agregar_productos).grid(row = 3, columnspan = 2, sticky = W + E)
 
 
+        #Aviso de datos
+        self.aviso = Label(Text = '', fg = 'red')
+        self.aviso.grid(row = 3, colunm = 0, columnspan = 2, sticky = W + E)
+
         #Tabla de datos
-        self.tabla = ttk.Treeview(height = 10, column = 3)
-        self.tabla.grid(row = 4, column = 0, columnspan = 3)
+        self.tabla = ttk.Treeview(height = 10, column = 4)
+        self.tabla.grid(row = 4, column = 0, columnspan = 1)
         self.tabla.heading('#0', text = 'name', anchor = CENTER)
         self.tabla.heading('#1', text = 'price', anchor = CENTER)
-        
+        # self.tabla.heading('#2', text = 'cantidad', anchor = CENTER)
         
         
         self.get_Productos() 
@@ -57,8 +67,8 @@ class Productos:
         # #limpiar tabla
         records = self.tabla.get_children()
         for element in records:
-             self.tabla.delete(element)
-             
+            self.tabla.delete(element)
+
         #quering datos
         query = 'SELECT * FROM product ORDER BY name DESC'
         db_rows = self.run_query(query)
@@ -67,18 +77,22 @@ class Productos:
         for row in db_rows:
             self.tabla.insert('', 0, text = row[1], values = row[2])
             
-    # Validacion de los productos ingresados      
+    # Validacion de los productos ingresados       
     def validacion(self):
-        return len(self.Nombre.get()) != 0 and len(self.Precio.get()) != 0
+        return len(self.Nombre.get()) != 0 and len(self.Precio.get()) != 0 
     
     # visualizacion de los productos.
     def Agregar_productos(self):
         if self.validacion():
-            print(self.Nombre.get())
-            print(self.Precio.get())
+            query = 'INSERT INTO product VALUES(NULL, ?, ?)'
+            parameters = (self.Nombre.get(), self.Precio.get())
+            self.run_query(query, parameters)
+            self.aviso['text'] = 'El producto {} asi agregado'.format(self.Nombre.get())
+            self.Nombre.delete(0, END)
+            self.Precio.delete(0, END)
         else:
-            print('Nombre y Precio es obligado')
-            
+            self.aviso['text'] = 'El producto es necesarios agregar'
+        self.get_Productos()
 
 if __name__ == '__main__':
     ventana = Tk()
