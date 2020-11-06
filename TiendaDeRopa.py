@@ -30,28 +30,40 @@ class Productos:
         Label(frame, text = 'price: ').grid(row = 2, column = 0)
         self.Precio = Entry(frame)
         self.Precio.grid(row = 2, column = 1)
+
+        #cantidad de productos
+        Label(frame, text = 'cantidad: ').grid(row = 3, column = 0)
+        self.cantidad = Entry(frame)
+        self.cantidad.grid(row = 3, column = 1)
+ 
+ 
+        # Precio a vender
+        Label(frame, text ='valor de venta').grid(row = 4, column = 0)
+        self.valor = Entry(frame)
+        self.valor.grid(row = 4, column = 1)
         
-        
-        # #Cantidad
-        # Label(frame, text = 'cantidad: ').grid(row = 3, column = 0)
-        # self.canti = Entry(frame)
-        # self.canti.grid(row = 3, column = 1) 
-        
-        
+    
         #Boton para agregar productos
-        ttk.Button(frame, text = 'Agregar Productos', command = self.Agregar_productos).grid(row = 3, columnspan = 2, sticky = W + E)
+        ttk.Button(frame, text = 'Agregar Productos', command = self.Agregar_productos).grid(row = 5, columnspan = 2, sticky = W + E)
 
 
         #Aviso de datos
-        self.aviso = Label(Text = '', fg = 'red')
-        self.aviso.grid(row = 3, colunm = 0, columnspan = 2, sticky = W + E)
+        self.aviso = Label(text = '', fg = 'red')
+        self.aviso.grid(row = 3, column = 0, columnspan = 2, sticky = W + E)
 
         #Tabla de datos
         self.tabla = ttk.Treeview(height = 10, column = 4)
         self.tabla.grid(row = 4, column = 0, columnspan = 1)
         self.tabla.heading('#0', text = 'name', anchor = CENTER)
         self.tabla.heading('#1', text = 'price', anchor = CENTER)
-        # self.tabla.heading('#2', text = 'cantidad', anchor = CENTER)
+        
+        
+        #boton de eliminar productos
+        ttk.Button(text = 'Eliminar', command = self.eleminar_productos).grid(row = 5, columnspan = 2, sticky = W)
+        
+        
+        #boton de editar productos
+        ttk.Button(text = 'Editar', command = self.editar_pruductos).grid(row = 5, columnspan = 2, sticky = E)
         
         
         self.get_Productos() 
@@ -93,7 +105,73 @@ class Productos:
         else:
             self.aviso['text'] = 'El producto es necesarios agregar'
         self.get_Productos()
-
+        
+    # funcion para eliminar los productos no deseados
+    def eleminar_productos(self):
+        self.aviso['text'] = ''
+        try:
+            self.tabla.item(self.tabla.selection())['text'][0]
+        except IndexError as e:
+            self.aviso['text'] = 'POR FAVOR SELECIONA UN PRODUCTO'  
+            return
+        self.aviso['text'] = ''
+        name = self.tabla.item(self.tabla.selection())['text']
+        query =  'DELETE FROM product WHERE name = ?'
+        self.run_query(query, (name, ))
+        self.aviso['text'] = 'El producto {} asi eliminado'.format(name)
+        self.get_Productos()
+    
+    #Editar productos 
+    def editar_pruductos(self):
+        
+        self.aviso['text'] = ''
+        try:
+            self.tabla.item(self.tabla.selection())['text'][0]
+        except IndexError as e:
+            self.aviso['text'] = 'POR FAVOR SELECIONA UN PRODUCTO'  
+            return
+        name = self.tabla.item(self.tabla.selection())['text']
+        price = self.tabla.item(self.tabla.selection())['values'][0]
+        
+        # Nueva ventana para editar los productos
+        self.ventana_segunda = Toplevel()
+        self.ventana_segunda.title = 'Ventana de editar productos'
+        
+        
+        # viejo nombre
+        Label(self.ventana_segunda, text = 'Viejo nombre: ').grid(row = 0, column = 1)
+        Entry(self.ventana_segunda, textvariable = StringVar(self.ventana_segunda, value = name), state = 'readonly').grid(row = 0, column = 2)
+        
+        
+        # nuevo nombre
+        Label(self.ventana_segunda, text = 'Nuevo Nombre: ').grid(row = 1, column = 1)
+        new_name = Entry(self.ventana_segunda)
+        new_name.grid(row = 1, column = 2)
+        
+        
+        # viejo precio
+        Label(self.ventana_segunda, text = 'Viejo Precio: ').grid(row = 2, column = 1)
+        Entry(self.ventana_segunda, textvariable = StringVar(self.ventana_segunda, value = price), state = 'readonly').grid(row = 2, column = 2)
+        
+        # Nuevo Precio
+        Label(self.ventana_segunda, text = 'Nuevo Precio: ').grid(row = 3, column = 1)
+        new_precio= Entry(self.ventana_segunda)
+        new_precio.grid(row = 3, column = 2)
+        
+        
+        #Boton de editar nuevo
+        Button(self.ventana_segunda, text = 'Cambiar', command = lambda: self.editar_productos(new_name.get(), name, new_precio.get(),price)).grid(row = 4, column = 2, sticky = W + E)
+        
+    
+    def editar_productos(self, new_name, name, new_precio, price):
+        query = 'UPDATE product SET name = ?, price = ? WHERE name = ? AND price = ?'
+        parameters = (new_name, new_precio, name, price)
+        self.run_query(query, parameters)
+        self.ventana_segunda.destroy()
+        self.aviso['text'] = 'Producto {} editado'.format(name)
+        self.get_Productos()
+        
+        
 if __name__ == '__main__':
     ventana = Tk()
     aplicacion = Productos(ventana)
