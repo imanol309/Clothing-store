@@ -1,4 +1,3 @@
-from os import system
 from tkinter import ttk
 from tkinter import *
 
@@ -6,7 +5,7 @@ import sqlite3
 
 class Productos:
 
-    db_name = 'Base.db'
+    db_name = 'base1.db'
     
     def __init__(self,ventana):
         
@@ -25,7 +24,6 @@ class Productos:
         self.Nombre.focus()
         self.Nombre.grid(row = 1, column = 1)
 
-
         #Precio de producto
         Label(frame, text = 'price: ').grid(row = 2, column = 0)
         self.Precio = Entry(frame)
@@ -33,15 +31,8 @@ class Productos:
 
         #cantidad de productos
         Label(frame, text = 'cantidad: ').grid(row = 3, column = 0)
-        self.cantidad = Entry(frame)
-        self.cantidad.grid(row = 3, column = 1)
- 
- 
-        # Precio a vender
-        Label(frame, text ='valor de venta').grid(row = 4, column = 0)
-        self.valor = Entry(frame)
-        self.valor.grid(row = 4, column = 1)
-        
+        self.Cantidad = Entry(frame)
+        self.Cantidad.grid(row = 3, column = 1)
     
         #Boton para agregar productos
         ttk.Button(frame, text = 'Agregar Productos', command = self.Agregar_productos).grid(row = 5, columnspan = 2, sticky = W + E)
@@ -49,21 +40,22 @@ class Productos:
 
         #Aviso de datos
         self.aviso = Label(text = '', fg = 'red')
-        self.aviso.grid(row = 3, column = 0, columnspan = 2, sticky = W + E)
+        self.aviso.grid(row = 4, column = 0, columnspan = 2, sticky = W + E)
 
         #Tabla de datos
-        self.tabla = ttk.Treeview(height = 10, column = 4)
-        self.tabla.grid(row = 4, column = 0, columnspan = 1)
+        self.tabla = ttk.Treeview(height = 15)
+        self.tabla['columns'] = ('one', 'two')
+        self.tabla.grid(row = 5, column = 0, columnspan = 2)
         self.tabla.heading('#0', text = 'name', anchor = CENTER)
         self.tabla.heading('#1', text = 'price', anchor = CENTER)
-        
+        self.tabla.heading('#2', text = 'cantidad', anchor = CENTER)
         
         #boton de eliminar productos
-        ttk.Button(text = 'Eliminar', command = self.eleminar_productos).grid(row = 5, columnspan = 2, sticky = W)
+        ttk.Button(text = 'Eliminar', command = self.eleminar_productos).grid(row = 6, columnspan = 2, sticky = W)
         
         
         #boton de editar productos
-        ttk.Button(text = 'Editar', command = self.editar_pruductos).grid(row = 5, columnspan = 2, sticky = E)
+        ttk.Button(text = 'Editar', command = self.editar_pruductos).grid(row = 6, columnspan = 2, sticky = E)
         
         
         self.get_Productos() 
@@ -87,21 +79,22 @@ class Productos:
         print(db_rows)
         
         for row in db_rows:
-            self.tabla.insert('', 0, text = row[1], values = row[2])
+            self.tabla.insert('', 0, text = row[1], values = row[2], tags = row[3])
             
     # Validacion de los productos ingresados       
     def validacion(self):
-        return len(self.Nombre.get()) != 0 and len(self.Precio.get()) != 0 
+        return len(self.Nombre.get()) != 0 and len(self.Precio.get()) != 0 and len(self.Cantidad.get()) != 0 
     
     # visualizacion de los productos.
     def Agregar_productos(self):
         if self.validacion():
-            query = 'INSERT INTO product VALUES(NULL, ?, ?)'
-            parameters = (self.Nombre.get(), self.Precio.get())
+            query = 'INSERT INTO product VALUES(NULL, ?, ?, ?)'
+            parameters = (self.Nombre.get(), self.Precio.get(), self.Cantidad.get())
             self.run_query(query, parameters)
             self.aviso['text'] = 'El producto {} asi agregado'.format(self.Nombre.get())
             self.Nombre.delete(0, END)
             self.Precio.delete(0, END)
+            # self.Cantidad.delete(0, END)
         else:
             self.aviso['text'] = 'El producto es necesarios agregar'
         self.get_Productos()
@@ -160,10 +153,10 @@ class Productos:
         
         
         #Boton de editar nuevo
-        Button(self.ventana_segunda, text = 'Cambiar', command = lambda: self.editar_productos(new_name.get(), name, new_precio.get(),price)).grid(row = 4, column = 2, sticky = W + E)
+        Button(self.ventana_segunda, text = 'Cambiar', command = lambda: self.Editar(new_name.get(), name, new_precio.get(),price)).grid(row = 4, column = 2, sticky = W + E)
         
     
-    def editar_productos(self, new_name, name, new_precio, price):
+    def Editar(self, new_name, name, new_precio, price):
         query = 'UPDATE product SET name = ?, price = ? WHERE name = ? AND price = ?'
         parameters = (new_name, new_precio, name, price)
         self.run_query(query, parameters)
