@@ -79,13 +79,13 @@ class Productos:
         print(db_rows)
         
         for row in db_rows:
-            self.tabla.insert('', 0, text = row[1], values = row[2], tags = row[3])
-            
+            self.tabla.insert('', 0, text = row[1], values = row[2])
+        
     # Validacion de los productos ingresados       
     def validacion(self):
         return len(self.Nombre.get()) != 0 and len(self.Precio.get()) != 0 and len(self.Cantidad.get()) != 0 
     
-    # visualizacion de los productos.
+    # visualizacion de los productos. 
     def Agregar_productos(self):
         if self.validacion():
             query = 'INSERT INTO product VALUES(NULL, ?, ?, ?)'
@@ -94,7 +94,7 @@ class Productos:
             self.aviso['text'] = 'El producto {} asi agregado'.format(self.Nombre.get())
             self.Nombre.delete(0, END)
             self.Precio.delete(0, END)
-            # self.Cantidad.delete(0, END)
+            self.Cantidad.delete(0, END)
         else:
             self.aviso['text'] = 'El producto es necesarios agregar'
         self.get_Productos()
